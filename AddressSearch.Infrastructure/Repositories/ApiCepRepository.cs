@@ -1,12 +1,12 @@
 ﻿using AddressSearch.Application.DTOs;
 using AddressSearch.Domain.Entities;
-using AddressSearch.Domain.Interfaces;
+using AddressSearch.Domain.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace AddressSearch.Infrastructure.Repositories;
 
-public class ApiCepRepository : IExternalApiRepository
+public class ApiCepRepository : IApiCepRepository
 {
     private readonly string _baseURL;
 
@@ -33,34 +33,5 @@ public class ApiCepRepository : IExternalApiRepository
         Address address = new(addressDTO.Address, addressDTO.District, addressDTO.City, addressDTO.State, addressDTO.Code);
 
         return address;
-    }
-
-    public async Task<List<Address>> GetAddressByStreet(string state, string city, string street)
-    {
-        using HttpClient client = new();
-
-        var response = await client.GetAsync($"{_baseURL}/{state}/{city}/{street}/json/");
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Error: {response.ReasonPhrase} \n" +
-                                           $"Request: {response.RequestMessage.Method} \n" +
-                                           $"Uri: {response.RequestMessage.RequestUri}");
-        }
-
-        string? content = await response.Content.ReadAsStringAsync();
-        List<AddressApiCepDto>? addressDtos = new();
-        addressDtos = JsonConvert.DeserializeObject<List<AddressApiCepDto>>(content);
-        List<Address> addresses = new();
-
-        if (!addressDtos.Any())
-            return addresses;
-
-        foreach (var addressDto in addressDtos)
-        {
-            addresses.Add(new(addressDto.Address, addressDto.District, addressDto.City, addressDto.State, addressDto.Code));
-        }
-
-        return addresses;
     }
 }

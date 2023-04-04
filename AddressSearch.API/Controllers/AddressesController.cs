@@ -1,6 +1,7 @@
-﻿using AddressSearch.Application;
-using AddressSearch.Application.Models;
-using AddressSearch.Application.UseCases.AddressUseCases.Interfaces;
+﻿using AddressSearch.Application.Models;
+using AddressSearch.Domain.Entities;
+using AddressSearch.Domain.Interfaces.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AddressSearch.API.Controllers;
@@ -9,22 +10,23 @@ namespace AddressSearch.API.Controllers;
 [Route("[controller]")]
 public class AddressesController : ControllerBase
 {
-    private readonly IGetAddressByCepUseCase _getAddressByCepUseCase;
-    private readonly IGetAddressByStreetUseCase _getAddressByStreetUseCase;
+    private readonly ISearchAddressService _searchAddressService;
+    private readonly IMapper _mapper;
 
-    public AddressesController(IGetAddressByCepUseCase getAddressByCepUseCase, IGetAddressByStreetUseCase getAddressByStreetUseCase)
+    public AddressesController(ISearchAddressService searchAddressService, IMapper mapper)
     {
-        _getAddressByCepUseCase = getAddressByCepUseCase;
-        _getAddressByStreetUseCase = getAddressByStreetUseCase;
+        _searchAddressService = searchAddressService;
+        _mapper = mapper;
     }
 
     [HttpGet("{cep}")]
-    public async Task<ActionResult<AddressModel>> GetAddressByCepUseCase(string cep)
+    public async Task<ActionResult<AddressModel>> GetAddressByCep(string cep)
     {
         try
         {
-            Response response = await _getAddressByCepUseCase.ExecuteAsync(cep);
-            return StatusCode((int)response.StatusCode, response);
+            Address address = await _searchAddressService.GetAddressByCep(cep);
+            AddressModel addressModel = _mapper.Map<AddressModel>(address);
+            return Ok(addressModel);
         }
         catch (HttpRequestException ex)
         {
@@ -37,12 +39,13 @@ public class AddressesController : ControllerBase
     }
 
     [HttpGet("{state}/{city}/{street}")]
-    public async Task<ActionResult<AddressModel>> GetAddressByStreetUseCase(string state, string city, string street)
+    public async Task<ActionResult<List<AddressModel>>> GetAddressByStreet(string state, string city, string street)
     {
         try
         {
-            Response response = await _getAddressByStreetUseCase.ExecuteAsync(state, city, street);
-            return StatusCode((int)response.StatusCode, response);
+            List<Address> addresses = await _searchAddressService.GetAddressByStreet(state, city, street);
+            List<AddressModel> addressModel = _mapper.Map<List<AddressModel>>(addresses);
+            return Ok(addressModel);
         }
         catch (HttpRequestException ex)
         {
