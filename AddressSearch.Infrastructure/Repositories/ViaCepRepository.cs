@@ -1,12 +1,12 @@
 ﻿using AddressSearch.Application.Dtos;
 using AddressSearch.Domain.Entities;
-using AddressSearch.Domain.Interfaces;
+using AddressSearch.Domain.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace AddressSearch.Infrastructure.Repositories;
 
-public class ViaCepRepository : IExternalApiRepository
+public class ViaCepRepository : IViaCepRepository
 {
     private readonly string _baseURL;
 
@@ -20,7 +20,7 @@ public class ViaCepRepository : IExternalApiRepository
     {
         using HttpClient client = new ();
         var response = await client.GetAsync($"{ _baseURL}/{cep}/json/");
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException($"Error: {response.ReasonPhrase} \n" +

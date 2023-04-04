@@ -1,11 +1,10 @@
 ﻿using AddressSearch.Domain.Entities;
 
-namespace AddressSearch.Domain.Interfaces
+namespace AddressSearch.Domain.Interfaces.Repositories
 {
-    public interface IExternalApiRepository
+    public interface IViaCepRepository
     {
         public Task<Address> GetAddressByCep(string cep);
-
         public Task<List<Address>> GetAddressByStreet(string state, string city, string street);
     }
 }
